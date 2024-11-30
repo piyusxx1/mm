@@ -1,0 +1,109 @@
+<!-- signup.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker - Sign Up</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-form">
+            <h2>Create Account</h2>
+            <form id="signupForm">
+                <div class="form-group">
+                    <input type="text" id="name" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                </div>
+                <button type="submit" class="btn">Sign Up</button>
+            </form>
+            <p>Already have an account? <a href="login.html">Login</a></p>
+            <p id="errorMessage" style="color: red;"></p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOOG9I_EJpU36pomJ7-Dt60nTUnWdIeMg",
+            authDomain: "fintra-3fb82.firebaseapp.com",
+            projectId: "fintra-3fb82",
+            storageBucket: "fintra-3fb82.firebasestorage.app",
+            messagingSenderId: "414952069949",
+            appId: "1:414952069949:web:abbdb328c5f790ab3d0354",
+            measurementId: "G-SPHXTXVY12"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Signup functionality
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorMessage = document.getElementById('errorMessage');
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Clear previous error messages
+            errorMessage.textContent = '';
+
+            // Validation
+            if (password !== confirmPassword) {
+                errorMessage.textContent = "Passwords don't match!";
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMessage.textContent = "Password should be at least 6 characters long!";
+                return;
+            }
+
+            try {
+                // Create user with email and password
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                console.log("User created successfully");
+
+                // Update profile with name
+                await updateProfile(userCredential.user, {
+                    displayName: name
+                });
+                console.log("Profile updated successfully");
+
+                // Create user document in Firestore
+                await setDoc(doc(db, 'users', userCredential.user.uid), {
+                    name: name,
+                    email: email,
+                    createdAt: new Date().toISOString()
+                });
+                console.log("User document created in Firestore");
+
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                console.error("Error during signup:", error);
+                errorMessage.textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>

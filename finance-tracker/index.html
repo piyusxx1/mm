@@ -1,0 +1,112 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker - Welcome</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .hero {
+            text-align: center;
+            padding: 100px 20px;
+            background-color: #f8f9fa;
+        }
+
+        .hero h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .features {
+            padding: 50px 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .feature-card h3 {
+            margin: 15px 0;
+            color: #333;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Welcome to Finance Tracker</h1>
+            <p>Take control of your finances with our easy-to-use tracking system</p>
+            <div class="cta-buttons">
+                <a href="signup.html" class="btn">Get Started</a>
+                <a href="login.html" class="btn btn-secondary">Login</a>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2 style="text-align: center;">Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Track Expenses</h3>
+                    <p>Easily record and categorize your daily expenses</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Monitor Income</h3>
+                    <p>Keep track of all your income sources in one place</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Secure Storage</h3>
+                    <p>Your financial data is stored securely with Firebase</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js"></script>
+    <!-- Replace the old Firebase scripts with these -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script>
+        // Check if user is already logged in
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+    </script>
+</body>
+</html>

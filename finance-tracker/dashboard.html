@@ -1,0 +1,159 @@
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard">
+            <div class="header">
+                <h1>Finance Dashboard</h1>
+                <button id="logoutBtn" class="btn">Logout</button>
+            </div>
+            
+            <div class="transactions">
+                <h2>Add Transaction</h2>
+                <form id="transactionForm" class="transaction-form">
+                    <div class="form-group">
+                        <input type="text" id="description" placeholder="Description" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="amount" placeholder="Amount" required>
+                    </div>
+                    <div class="form-group">
+                        <select id="type" required>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Add Transaction</button>
+                </form>
+
+                <div class="transaction-list" id="transactionList">
+                    <!-- Transactions will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            where, 
+            orderBy, 
+            getDocs 
+        } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOOG9I_EJpU36pomJ7-Dt60nTUnWdIeMg",
+            authDomain: "fintra-3fb82.firebaseapp.com",
+            projectId: "fintra-3fb82",
+            storageBucket: "fintra-3fb82.firebasestorage.app",
+            messagingSenderId: "414952069949",
+            appId: "1:414952069949:web:abbdb328c5f790ab3d0354",
+            measurementId: "G-SPHXTXVY12"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                console.log("User signed out successfully");
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error("Error signing out:", error);
+            }
+        });
+
+        // Add transaction
+        const transactionForm = document.getElementById('transactionForm');
+        transactionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const description = document.getElementById('description').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const type = document.getElementById('type').value;
+            
+            const user = auth.currentUser;
+            
+            if (user) {
+                try {
+                    await addDoc(collection(db, 'transactions'), {
+                        userId: user.uid,
+                        description: description,
+                        amount: amount,
+                        type: type,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    console.log("Transaction added successfully");
+                    transactionForm.reset();
+                    loadTransactions();
+                } catch (error) {
+                    console.error('Error adding transaction:', error);
+                }
+            }
+        });
+
+        // Load transactions
+        async function loadTransactions() {
+            const transactionList = document.getElementById('transactionList');
+            const user = auth.currentUser;
+            
+            if (user) {
+                try {
+                    const q = query(
+                        collection(db, 'transactions'),
+                        where('userId', '==', user.uid),
+                        orderBy('timestamp', 'desc')
+                    );
+                    
+                    const querySnapshot = await getDocs(q);
+                    
+                    transactionList.innerHTML = '';
+                    querySnapshot.forEach((doc) => {
+                        const transaction = doc.data();
+                        const div = document.createElement('div');
+                        div.className = 'transaction-item';
+                        div.innerHTML = `
+                            <span>${transaction.description}</span>
+                            <span class="${transaction.type}">${transaction.type === 'income' ? '+' : '-'}$${transaction.amount}</span>
+                        `;
+                        transactionList.appendChild(div);
+                    });
+                } catch (error) {
+                    console.error('Error loading transactions:', error);
+                }
+            }
+        }
+
+        // Check authentication state and load transactions
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                console.log("User is logged in:", user.email);
+                loadTransactions();
+            } else {
+                console.log("User is not logged in, redirecting to login page");
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
